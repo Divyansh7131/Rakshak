@@ -1,0 +1,40 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "email": "abd@gmail.com",
+      "username": "Divyansh",
+      "address": "XYZABCD",
+      "codeword": "Kya hal hai",
+      "message": "Danger",
+      "password": "123456"
+    },
+    {
+      "id": "2",
+      "email": "adc@gmail.com",
+      "username": "ABCDE",
+      "address": "YSFD",
+      "codeword": "hash",
+      "message": "KAOW KAOW",
+      "password": "654321"
+    },
+    {
+      "id": "3",
+      "email": "fgh@gmail.com",
+      "username": "ABCDErt",
+      "address": "YSFDYXZ",
+      "codeword": "hashhhh",
+      "message": "KAOW KAOW miaow",
+      "password": "654321123"
+    },
+    {
+      "id": "5",
+      "email": "gc@gmail.com",
+      "username": "`urftikhbj",
+      "address": "bmdfjk",
+      "codeword": "kdtuoi",
+      "message": "fhgukgrt",
+      "password": "5786864674"
+    }
+  ]
+}

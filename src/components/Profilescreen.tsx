@@ -1,0 +1,253 @@
+import React, { useEffect, useState } from "react";
+import {View,Text,StyleSheet,ActivityIndicator,TextInput,TouchableOpacity,Alert, ScrollView,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { Feather } from "@expo/vector-icons";
+
+type User = {
+  id: string;
+  email: string;
+  phoneNumber: string;
+};
+
+type PermanentAddress = {
+  lat: number;
+  lng: number;
+};
+
+type UserDetails = {
+  permanentAddress?: PermanentAddress | null;
+  codeWord?: string | null;
+  message?: string | null;
+};
+
+type RootStackParamList = {
+  Login: undefined;
+  Profile: undefined;
+};
+
+export default function ProfileScreen() {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const [user, setUser] = useState<User | null>(null);
+  const [details, setDetails] = useState<UserDetails | null>(null);
+  const [locationName, setLocationName] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
+
+  const API_BASE = "https://rakshak-gamma.vercel.app/api/user";
+
+  useEffect(() => {
+    const loadUserAndDetails = async () => {
+      try {
+        setLoading(true);
+        const userData = await AsyncStorage.getItem("loggedInUser");
+        console.log("Helloo,",userData);
+        
+
+        if (!userData) {
+          setLoading(false);
+          return;
+        }
+
+        const parsedUser: User = JSON.parse(userData);
+        setUser(parsedUser);
+
+        const res = await fetch(`${API_BASE}/${parsedUser.id}/details`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        const data = await res.json();
+        if (data.success && data.details) {
+          setDetails(data.details);
+        } else {
+          Alert.alert("Error", data.message || "Failed to load user details");
+        }
+
+        // 🔹 Fetch readable location name
+        const lat = data.details?.permanentAddress?.lat;
+        const lng = data.details?.permanentAddress?.lng;
+
+        if (lat && lng) {
+          const geo = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&addressdetails=1`
+          );
+          const g = await geo.json();
+          if (g?.address) {
+            const { city, town, village, state, country } = g.address;
+            const place = [city || town || village, state, country]
+              .filter(Boolean)
+              .join(", ");
+            setLocationName(place || "Unknown location");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching details:", error);
+        Alert.alert("Error", "Something went wrong while fetching profile data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserAndDetails();
+  }, []);
+
+  const handleSave = async () => {
+    if (!user || !details) return;
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/${user.id}/details`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(details),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        Alert.alert("Success", "Details updated successfully!");
+        setEditing(false);
+      } else {
+        Alert.alert("Error", data.message || "Failed to update details");
+      }
+    } catch (err) {
+      console.error("Update error:", err);
+      Alert.alert("Error", "Something went wrong while updating");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem("loggedInUser");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Login" }],
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+      Alert.alert("Error", "Failed to logout. Please try again.");
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#FF0000" />
+        <Text style={{ color: "#FF0000", marginTop: 10 }}>
+          Loading profile...
+        </Text>
+      </View>
+    );
+  }
+
+  if (!user) {
+    return (
+      <View style={styles.center}>
+        <Text style={{ color: "#FF0000", fontSize: 18 }}>
+          No user data found.
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.container}>
+      {/* 🔹 Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Profile</Text>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <TouchableOpacity onPress={() => setEditing(!editing)} style={{ marginRight: 15 }}>
+            <Feather name={editing ? "x" : "edit-2"} size={22} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleLogout}>
+            <Feather name="log-out" size={22} color="white" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* 🔹 Content */}
+      <View style={styles.content}>
+        <Text style={styles.label}>Email</Text>
+        <Text style={styles.value}>{user.email || "Not available"}</Text>
+
+        <Text style={styles.label}>Phone Number</Text>
+        <Text style={styles.value}>{user.phoneNumber || "Not available"}</Text>
+
+        {/* <Text style={styles.label}>Permanent Address</Text>
+        <Text style={styles.value}>
+          {locationName ||
+            (details?.permanentAddress
+              ? `Lat: ${details.permanentAddress.lat}, Lng: ${details.permanentAddress.lng}`
+              : "Not available")}
+        </Text> */}
+
+        <Text style={styles.label}>Code Word</Text>
+        <TextInput
+          style={[styles.input, !editing && styles.readOnly]}
+          editable={editing}
+          placeholder="Enter code word"
+          value={details?.codeWord ?? ""}
+          onChangeText={(text) =>
+            setDetails({ ...details, codeWord: text })
+          }
+        />
+
+        <Text style={styles.label}>Message</Text>
+        <TextInput
+          style={[styles.input, !editing && styles.readOnly]}
+          editable={editing}
+          multiline
+          placeholder="Enter emergency message"
+          value={details?.message ?? ""}
+          onChangeText={(text) =>
+            setDetails({ ...details, message: text })
+          }
+        />
+
+        {editing && (
+          <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
+            <Text style={styles.saveText}>Save Changes</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#fff" },
+  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" },
+  header: {
+    backgroundColor: "#FF0000",
+    paddingTop: 60,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  headerTitle: { fontSize: 20, color: "white", fontWeight: "bold" },
+  content: { padding: 20 },
+  label: { color: "#888", fontSize: 13, marginTop: 15 },
+  value: { color: "#222", fontSize: 16, marginTop: 5 },
+  input: {
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 16,
+    color: "#333",
+    marginTop: 5,
+  },
+  readOnly: { opacity: 0.6 },
+  saveBtn: {
+    backgroundColor: "#FF0000",
+    borderRadius: 10,
+    paddingVertical: 14,
+    marginTop: 30,
+    alignItems: "center",
+  },
+  saveText: { color: "white", fontWeight: "bold", fontSize: 16 },
+});

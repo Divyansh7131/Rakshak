@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "610386603851",
+    "project_id": "rakshak-1d880",
+    "storage_bucket": "rakshak-1d880.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:610386603851:android:8d2d57b5054b56cc5d02ce",
+        "android_client_info": {
+          "package_name": "com.rakshak.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMkxt9je_GdoEQoShOqGrVDpAp9E_NiQg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
