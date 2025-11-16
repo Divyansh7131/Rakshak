@@ -12,12 +12,13 @@ import {
 } from "react-native";
 import { Icon } from "react-native-elements";
 
+const API_URL = "https://rakshak-gamma.vercel.app/api/auth/signin";
+const BRAND_COLOR = "#C30000";
+
 export default function Login({ navigation }: any) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // 👈 toggle state
-
-  const url = "https://rakshak-gamma.vercel.app/api/auth/signin";
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     if (!phoneNumber || !password) {
@@ -26,7 +27,7 @@ export default function Login({ navigation }: any) {
     }
 
     try {
-      const response = await fetch(url, {
+      const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phoneNumber, password }),
@@ -49,6 +50,10 @@ export default function Login({ navigation }: any) {
     }
   };
 
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+
+  const navigateToRegister = () => navigation.navigate("Register");
+
   return (
     <ImageBackground
       source={{ uri: "https://i.ibb.co/YWBgMpC/red-gradient-bg.jpg" }}
@@ -56,58 +61,70 @@ export default function Login({ navigation }: any) {
       resizeMode="cover"
     >
       <View style={styles.overlay}>
-        <View style={styles.form}>
-          <Text style={styles.head}>Rakshak</Text>
-          <Text style={styles.subtitle}>Your Safety, Our Priority</Text>
+        <View style={styles.formCard}>
+          {/* Header */}
+          <Text style={styles.brandTitle}>Rakshak</Text>
+          <Text style={styles.tagline}>Your Safety, Our Priority</Text>
 
-          {/* Phone number input */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Phone Number</Text>
+          {/* Phone Number Field */}
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>Phone Number</Text>
             <TextInput
               placeholder="Enter phone number"
               keyboardType="phone-pad"
               placeholderTextColor="#bbb"
-              style={styles.input}
+              style={styles.textInput}
               value={phoneNumber}
               onChangeText={setPhoneNumber}
+              autoCapitalize="none"
+              autoCorrect={false}
             />
           </View>
 
-          {/* Password input with show/hide */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Password</Text>
-            <View style={styles.passwordContainer}>
+          {/* Password Field */}
+          <View style={styles.fieldContainer}>
+            <Text style={styles.fieldLabel}>Password</Text>
+            <View style={styles.passwordWrapper}>
               <TextInput
                 placeholder="Enter password"
                 placeholderTextColor="#bbb"
-                secureTextEntry={showPassword} // ✅ Corrected logic
-                style={styles.passwordInput}
+                secureTextEntry={!showPassword}
+                style={styles.passwordTextInput}
                 value={password}
                 onChangeText={setPassword}
+                autoCapitalize="none"
+                autoCorrect={false}
               />
               <TouchableOpacity
-                style={styles.eyeButton}
-                onPress={() => setShowPassword(!showPassword)}
+                style={styles.visibilityToggle}
+                onPress={togglePasswordVisibility}
+                accessibilityLabel={showPassword ? "Hide password" : "Show password"}
               >
                 <Icon
-                  name={showPassword ? "eye" : "eye-slash"} // ✅ Fixed icons
+                  name={showPassword ? "eye" : "eye-slash"}
                   type="font-awesome"
-                  color="#C30000"
+                  color={BRAND_COLOR}
                   size={18}
                 />
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* Login button */}
-          <Pressable style={styles.submit} onPress={handleLogin}>
-            <Text style={styles.submitText}>Login</Text>
+          {/* Login Button */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.loginButton,
+              pressed && styles.loginButtonPressed,
+            ]}
+            onPress={handleLogin}
+          >
+            <Text style={styles.loginButtonText}>Login</Text>
           </Pressable>
 
-          {/* Register link */}
-          <Pressable onPress={() => navigation.navigate("Register")}>
-            <Text style={styles.linkText}>
-              New user? <Text style={styles.linkHighlight}>Register here</Text>
+          {/* Register Link */}
+          <Pressable onPress={navigateToRegister}>
+            <Text style={styles.registerPrompt}>
+              New user? <Text style={styles.registerLink}>Register here</Text>
             </Text>
           </Pressable>
         </View>
@@ -122,97 +139,107 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 20,
   },
-  form: {
-    width: "85%",
-    backgroundColor: "rgba(255,255,255,0.95)",
+  formCard: {
+    width: "100%",
+    maxWidth: 400,
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
     borderRadius: 20,
-    padding: 25,
+    padding: 28,
     shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 10,
     elevation: 8,
   },
-  head: {
+  brandTitle: {
     textAlign: "center",
-    fontSize: 36,
+    fontSize: 38,
     fontWeight: "800",
-    color: "#C30000",
-    letterSpacing: 1,
+    color: BRAND_COLOR,
+    letterSpacing: 1.2,
+    marginBottom: 4,
   },
-  subtitle: {
+  tagline: {
     textAlign: "center",
-    color: "#444",
+    color: "#555",
     fontSize: 14,
-    marginBottom: 30,
+    marginBottom: 32,
     fontStyle: "italic",
   },
-  inputContainer: {
+  fieldContainer: {
     marginBottom: 20,
   },
-  label: {
-    color: "#C30000",
+  fieldLabel: {
+    color: BRAND_COLOR,
     fontSize: 16,
-    marginBottom: 6,
+    marginBottom: 8,
     fontWeight: "600",
   },
-  input: {
-    height: 45,
+  textInput: {
+    height: 48,
     backgroundColor: "#fff",
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: "#C30000",
-    paddingHorizontal: 12,
+    borderColor: BRAND_COLOR,
+    paddingHorizontal: 14,
     color: "#333",
     fontSize: 15,
   },
-  passwordContainer: {
+  passwordWrapper: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: "#C30000",
-    paddingHorizontal: 10,
-    height: 45,
+    borderColor: BRAND_COLOR,
+    paddingHorizontal: 14,
+    height: 48,
   },
-  passwordInput: {
+  passwordTextInput: {
     flex: 1,
     color: "#333",
     fontSize: 15,
   },
-  eyeButton: {
-    paddingHorizontal: 4,
+  visibilityToggle: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
-  submit: {
-    backgroundColor: "#C30000",
-    height: 50,
-    borderRadius: 25,
+  loginButton: {
+    backgroundColor: BRAND_COLOR,
+    height: 52,
+    borderRadius: 26,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 10,
-    shadowColor: "#C30000",
+    marginTop: 12,
+    shadowColor: BRAND_COLOR,
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 10,
+    shadowRadius: 8,
     elevation: 5,
   },
-  submitText: {
+  loginButtonPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
+  },
+  loginButtonText: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "700",
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
   },
-  linkText: {
+  registerPrompt: {
     textAlign: "center",
-    marginTop: 20,
-    color: "#444",
+    marginTop: 24,
+    color: "#555",
     fontSize: 14,
   },
-  linkHighlight: {
-    color: "#C30000",
+  registerLink: {
+    color: BRAND_COLOR,
     fontWeight: "700",
   },
 });

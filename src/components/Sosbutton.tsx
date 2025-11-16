@@ -5,7 +5,7 @@ import { Alert, Animated, StyleSheet, Text, TouchableOpacity } from "react-nativ
 
 const BASE_URL = "https://rakshak-gamma.vercel.app";
 
-export default function SOSbutton() {
+export default function SOSButton() {
   const pulse = useRef(new Animated.Value(1)).current;
   const [isActive, setIsActive] = useState(false);
   const [sosId, setSosId] = useState<string | null>(null);
@@ -30,33 +30,37 @@ export default function SOSbutton() {
         return null;
       }
       const loc = await Location.getCurrentPositionAsync({});
-      return {
-        lat: loc.coords.latitude,
-        lng: loc.coords.longitude,
-      };
+      return { lat: loc.coords.latitude, lng: loc.coords.longitude };
     } catch (error) {
       console.error("Location Error:", error);
       return null;
     }
   };
 
-  // Fetch trusted friends
-  const fetchTrustedContacts = async (userId: string) => {
+  // Fetch trusted contacts and user SOS message from profile
+  const fetchTrustedContactsAndMessage = async (userId: string) => {
     try {
-      const res = await fetch(`${BASE_URL}/api/user/${userId}/trusted-friends`);
+      const res = await fetch(`${BASE_URL}/api/user/${userId}/details`);
       const data = await res.json();
-      return data.friends || [];
+      if (data.success && data.details) {
+        return {
+          friends: data.details.trustedFriends || [],
+          userMessage: data.details.message || "HELP!!",
+        };
+      }
+      return { friends: [], userMessage: "HELP!!" };
     } catch (error) {
-      console.error("Error fetching trusted friends:", error);
-      return [];
+      console.error("Error fetching trusted contacts:", error);
+      return { friends: [], userMessage: "HELP!!" };
     }
   };
 
-  // Simulate sending SMS/notification
-  const notifyTrustedContacts = async (friends: any[], message: string) => {
-    friends.forEach((friend: any) => {
+  // Notify trusted contacts (simulate SMS/WhatsApp or backend)
+  const notifyTrustedContacts = async (friends: any[], userMessage: string, location: any) => {
+    friends.forEach(friend => {
+      const message = `🚨 SOS Alert! ${userMessage} Location: https://www.google.com/maps/search/?api=1&query=${location.lat},${location.lng}`;
       console.log(`📩 Sending SOS message to ${friend.name} (${friend.phone}): ${message}`);
-      // Here you can integrate Twilio / Firebase Cloud Messaging / backend notification API
+      // Integrate SMS / WhatsApp / backend notification here
     });
   };
 
@@ -69,26 +73,23 @@ export default function SOSbutton() {
         body: JSON.stringify({ userId, location, status: "active" }),
       });
       const data = await response.json();
-      if (data.success) {
-        setSosId(data.sos.id);
-        return data.sos.id;
-      }
+      if (data.success) setSosId(data.sos.id);
+      return data.sos?.id || null;
     } catch (error) {
       console.error("Error creating SOS:", error);
+      return null;
     }
   };
 
-  // Update SOS alert (location or status)
+  // Update SOS alert periodically
   const updateSOS = async (id: string | null, location: any, status: string) => {
     try {
-      const response = await fetch(`${BASE_URL}/api/sos-alert/${id}`, {
+      if (!id) return;
+      await fetch(`${BASE_URL}/api/sos-alert/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ location, status }),
       });
-    //   console.log("AAAAAAAAAAAAAAAAAAAAAA"+ await response.json());
-      
-      return await response.json();
     } catch (error) {
       console.error("Error updating SOS:", error);
     }
@@ -121,11 +122,8 @@ export default function SOSbutton() {
       const location = await getCurrentLocation();
       if (!location) return;
 
-      const friends = await fetchTrustedContacts(user.id);
-      await notifyTrustedContacts(
-        friends,
-        "🚨 SOS Alert! " + user.username + " might be in danger. Check immediately."
-      );
+      const { friends, userMessage } = await fetchTrustedContactsAndMessage(user.id);
+      await notifyTrustedContacts(friends, userMessage, location);
 
       const id = await createSOS(user.id, location);
       if (id) {
@@ -145,9 +143,7 @@ export default function SOSbutton() {
   };
 
   return (
-    <Animated.View
-      style={[styles.sosButtonContainer, { transform: [{ scale: pulse }] }]}
-    >
+    <Animated.View style={[styles.sosButtonContainer, { transform: [{ scale: pulse }] }]}>
       <TouchableOpacity
         activeOpacity={0.8}
         style={[styles.sosButton, { backgroundColor: isActive ? "#777" : "#FF0000" }]}

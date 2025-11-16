@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
-import {View,Text,StyleSheet,ActivityIndicator,TextInput,TouchableOpacity,Alert, ScrollView,
+import {
+  View, Text, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity, Alert, ScrollView,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Feather } from "@expo/vector-icons";
+import SendEmergencyButton from "./SendEmergencyButton";
+
 
 type User = {
   id: string;
@@ -26,6 +29,7 @@ type UserDetails = {
 type RootStackParamList = {
   Login: undefined;
   Profile: undefined;
+  SOSHistory: undefined;
 };
 
 export default function ProfileScreen() {
@@ -43,8 +47,8 @@ export default function ProfileScreen() {
       try {
         setLoading(true);
         const userData = await AsyncStorage.getItem("loggedInUser");
-        console.log("Helloo,",userData);
-        
+        console.log("Helloo,", userData);
+
 
         if (!userData) {
           setLoading(false);
@@ -212,7 +216,20 @@ export default function ProfileScreen() {
             <Text style={styles.saveText}>Save Changes</Text>
           </TouchableOpacity>
         )}
+
+
+
       </View>
+      <View>
+        <TouchableOpacity
+          style={styles.historyBtn}
+          onPress={() => navigation.navigate("SOSHistory")}
+        >
+          <Text style={styles.historyText}>View SOS History</Text>
+        </TouchableOpacity>
+        <SendEmergencyButton />
+      </View>
+
     </ScrollView>
   );
 }
@@ -250,4 +267,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   saveText: { color: "white", fontWeight: "bold", fontSize: 16 },
+  historyBtn: {
+    backgroundColor: "#FF6347",
+    borderRadius: 10,
+    paddingVertical: 14,
+    marginTop: 20,
+    alignItems: "center",
+  },
+  historyText: { color: "white", fontWeight: "bold", fontSize: 16 },
 });

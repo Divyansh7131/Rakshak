@@ -2,7 +2,7 @@
   "$schema": "https://www.schemastore.org/tsconfig.json",
   "compilerOptions": {
     "target": "esnext",
-    "module": "node16",
+    "module": "esnext",
     "jsx": "react-jsx",
     "strict": true,
     "noEmit": true,
@@ -11,13 +11,9 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "types": [
-      "react",
-      "react-native",
-      "jest"
-    ],
+    "types": ["react", "react-native", "jest"],
     "customConditions": ["development", "browser"],
-    "moduleResolution": "node16"
+    "moduleResolution": "bundler"
   },
   "include": [
     "**/*.ts",
@@ -25,8 +21,6 @@
     "expo-env.d.ts",
     ".expo/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ],
+  "exclude": ["node_modules"],
   "extends": "expo/tsconfig.base"
 }

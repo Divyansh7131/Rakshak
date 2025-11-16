@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { default as AsyncStorage } from "@react-native-async-storage/async-storage";
 import * as Speech from "expo-speech";
 import { useEffect, useState } from "react";
 import {
@@ -218,27 +218,7 @@ export default function SafetyTipsScreen() {
     await AsyncStorage.setItem("langMode", newLang);
   };
 
-  const sendEmergencyMessage = async () => {
-    try {
-      const message = encodeURIComponent(
-        "🚨 I need help! This is my current location: https://www.google.com/maps/search/?api=1&query=My+Location"
-      );
-      const whatsappURL = `whatsapp://send?text=${message}`;
-      const smsURL = `sms:?body=${message}`;
 
-      Alert.alert(
-        "Send Emergency Alert",
-        "Choose where to send the SOS message:",
-        [
-          { text: "📱 WhatsApp", onPress: () => Linking.openURL(whatsappURL) },
-          { text: "✉️ SMS", onPress: () => Linking.openURL(smsURL) },
-          { text: "Cancel", style: "cancel" },
-        ]
-      );
-    } catch (error) {
-      Alert.alert("Error", "Unable to open messaging apps.");
-    }
-  };
 
   const theme = {
     background: darkMode ? "#121212" : "#fff",
@@ -255,7 +235,7 @@ export default function SafetyTipsScreen() {
     >
       <View style={styles.headerRow}>
         <Text style={[styles.header, { color: theme.accent }]}>
-          🔐 {language === "en" ? "Women Safety Tips" : "महिला सुरक्षा टिप्स"}
+          {language === "en" ? "Women Safety Tips" : "महिला सुरक्षा टिप्स"}
         </Text>
 
         <View style={styles.toggles}>
@@ -268,35 +248,25 @@ export default function SafetyTipsScreen() {
         </View>
       </View>
 
+
       <TouchableOpacity
-        style={[styles.emergencyButton, { backgroundColor: theme.accent }]}
-        onPress={sendEmergencyMessage}
+        style={[
+          styles.safePlaceButton,
+          { backgroundColor: "#1976D2", alignContent: "center", justifyContent: "center" },
+        ]}
+        onPress={() =>
+          Linking.openURL(
+            "https://www.google.com/maps/search/Police+Station+near+me"
+          )
+        }
       >
         <Text style={styles.buttonText}>
-          🚨{" "}
+          📍{" "}
           {language === "en"
-            ? "Send Emergency Message"
-            : "आपातकालीन संदेश भेजें"}
+            ? "Nearby Safe Places"
+            : "सुरक्षित स्थान"}
         </Text>
       </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[
-                          styles.safePlaceButton,
-                          { backgroundColor: "#1976D2", alignContent: "center", justifyContent: "center" },
-                        ]}
-                        onPress={() =>
-                          Linking.openURL(
-                            "https://www.google.com/maps/search/Police+Station+near+me"
-                          )
-                        }
-                      >
-                        <Text style={styles.buttonText}>
-                          📍{" "}
-                          {language === "en"
-                            ? "Nearby Safe Places"
-                            : "सुरक्षित स्थान"}
-                        </Text>
-                      </TouchableOpacity>
 
       {Object.entries(tipsData).map(([category, tips]) => (
         <View key={category}>
@@ -361,7 +331,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   toggles: { flexDirection: "row", alignItems: "center" },
-  header: { fontSize: 24, fontWeight: "bold", marginTop:25 },
+  header: { fontSize: 24, fontWeight: "bold", marginTop: 25 },
   category: { fontSize: 18, fontWeight: "bold", marginBottom: 10 },
   tipBox: { marginBottom: 20, padding: 12, borderRadius: 10 },
   tipHeader: {
