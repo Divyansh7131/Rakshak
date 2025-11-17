@@ -239,12 +239,13 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" },
   header: {
     backgroundColor: "#FF0000",
-    paddingTop: 60,
+    paddingTop: 20,
     paddingBottom: 20,
     paddingHorizontal: 20,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  
   },
   headerTitle: { fontSize: 20, color: "white", fontWeight: "bold" },
   content: { padding: 20 },
@@ -265,13 +266,15 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginTop: 30,
     alignItems: "center",
+   
   },
   saveText: { color: "white", fontWeight: "bold", fontSize: 16 },
   historyBtn: {
     backgroundColor: "#FF6347",
-    borderRadius: 10,
+    borderRadius: 30,
     paddingVertical: 14,
-    marginTop: 20,
+     marginVertical:10,
+    marginHorizontal:50,
     alignItems: "center",
   },
   historyText: { color: "white", fontWeight: "bold", fontSize: 16 },

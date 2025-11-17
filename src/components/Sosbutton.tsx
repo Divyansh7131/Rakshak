@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import { useEffect, useRef, useState } from "react";
 import { Alert, Animated, StyleSheet, Text, TouchableOpacity } from "react-native";
+import * as Linking from "expo-linking";
 
 const BASE_URL = "https://rakshak-gamma.vercel.app";
 
@@ -56,13 +57,23 @@ export default function SOSButton() {
   };
 
   // Notify trusted contacts (simulate SMS/WhatsApp or backend)
-  const notifyTrustedContacts = async (friends: any[], userMessage: string, location: any) => {
-    friends.forEach(friend => {
-      const message = `🚨 SOS Alert! ${userMessage} Location: https://www.google.com/maps/search/?api=1&query=${location.lat},${location.lng}`;
-      console.log(`📩 Sending SOS message to ${friend.name} (${friend.phone}): ${message}`);
-      // Integrate SMS / WhatsApp / backend notification here
-    });
-  };
+const notifyTrustedContacts = async (friends: any[], userMessage: string, location: any) => {
+  const mapUrl = `https://www.google.com/maps/search/?api=1&query=${location.lat},${location.lng}`;
+  const finalMessage = `🚨 SOS Alert!\n${userMessage}\n📍 Location: ${mapUrl}`;
+
+  const phones = friends
+    .map(friend => friend.phone)
+    .filter(Boolean)
+    .join(','); // separate numbers with comma
+
+  if (!phones) return;
+
+  const smsUrl = `sms:${phones}?body=${encodeURIComponent(finalMessage)}`;
+
+  Linking.openURL(smsUrl); // Opens SMS app with ALL numbers pre-filled
+
+  console.log(`📩 SMS prepared for: ${phones}`);
+};
 
   // Create SOS alert
   const createSOS = async (userId: string, location: any) => {

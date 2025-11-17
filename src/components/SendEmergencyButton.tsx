@@ -45,10 +45,12 @@ export default function SendEmergencyButton() {
 const styles = StyleSheet.create({
   button: {
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 30,
     alignItems: "center",
     backgroundColor: "#FF0000",
-    marginVertical: 10,
+    marginHorizontal: 50,
+    marginVertical:10,
+     paddingVertical: 14,
   },
   recording: {
     backgroundColor: "#D32F2F",

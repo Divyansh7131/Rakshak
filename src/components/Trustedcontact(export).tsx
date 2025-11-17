@@ -381,7 +381,7 @@ export default function TrustedContacts() {
 const styles = StyleSheet.create({
   container: {
     borderRadius: 13,
-    marginTop: 50,
+    marginTop: 10,
     marginBottom: 50,
     height: "100%",
     width: "100%",

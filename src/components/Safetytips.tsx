@@ -323,7 +323,7 @@ export default function SafetyTipsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16 },
+  container: { padding: 16,marginTop:10 },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
