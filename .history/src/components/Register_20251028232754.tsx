@@ -1,12 +1,12 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
-  Alert,
   ScrollView,
-  StyleSheet,
-  Text,
   TextInput,
-  TouchableOpacity,
   View,
+  Text,
+  StyleSheet,
+  Alert,
+  TouchableOpacity,
 } from "react-native";
 
 export default function Register({ navigation }: any) {
@@ -18,7 +18,7 @@ export default function Register({ navigation }: any) {
 
   const url = "https://rakshak-gamma.vercel.app/api/auth/signup";
 
-  //  Client-side Validation
+  // ✅ Client-side Validation
   const validateInputs = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^[0-9]{10}$/;
