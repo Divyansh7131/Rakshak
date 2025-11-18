@@ -15,7 +15,7 @@ import { Icon } from "react-native-elements";
 export default function Login({ navigation }: any) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // toggle state
+  const [showPassword, setShowPassword] = useState(false); // 👈 toggle state
 
   const url = "https://rakshak-gamma.vercel.app/api/auth/signin";
 
