@@ -41,7 +41,7 @@ export default function TrustedContacts() {
 
   const API_BASE = "https://rakshak-gamma.vercel.app/api/user";
 
-  //  Load userId from AsyncStorage
+  // Load userId from AsyncStorage
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -62,33 +62,34 @@ export default function TrustedContacts() {
     loadUser();
   }, []);
 
-  //  Fetch user's trusted contacts
-  useEffect(() => {
+  // Fetch contacts
+  const fetchContacts = async () => {
     if (!userId) return;
-    const fetchContacts = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`${API_BASE}/${userId}/trusted-friends`);
-        const data = await res.json();
-        if (data.success) {
-          setContacts(data.friends || []);
-        } else {
-          Alert.alert("Error", data.message || "Failed to fetch contacts.");
-        }
-      } catch (err) {
-        console.error("Fetch error:", err);
-        Alert.alert("Error", "Could not fetch contacts.");
-      } finally {
-        setLoading(false);
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/${userId}/trusted-friends`);
+      const data = await res.json();
+      if (data.success) {
+        setContacts(data.friends || []);
+      } else {
+        Alert.alert("Error", data.message || "Failed to fetch contacts.");
       }
-    };
+    } catch (err) {
+      console.error("Fetch error:", err);
+      Alert.alert("Error", "Could not fetch contacts.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchContacts();
   }, [userId]);
 
-  //  Validate phone number (10 digits)
+  // Validate phone number
   const isValidPhoneNumber = (phone: string) => /^[0-9]{10}$/.test(phone);
 
-  //  Add new trusted contact
+  // Add contact manually
   const addContact = async () => {
     if (!newName.trim() || !newPhone.trim()) {
       Alert.alert("Invalid Input", "Please enter both name and phone number.");
@@ -98,10 +99,7 @@ export default function TrustedContacts() {
       Alert.alert("Invalid Phone", "Phone number must be exactly 10 digits.");
       return;
     }
-    if (!userId) {
-      Alert.alert("Error", "User ID not found.");
-      return;
-    }
+    if (!userId) return;
 
     try {
       const res = await fetch(`${API_BASE}/${userId}/trusted-friends`, {
@@ -109,13 +107,12 @@ export default function TrustedContacts() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newName.trim(), phone: newPhone.trim() }),
       });
-
       const data = await res.json();
       if (data.success) {
-        setContacts((prev) => [...prev, data.friend]);
         setNewName("");
         setNewPhone("");
         Alert.alert("Success", "Contact added successfully!");
+        fetchContacts();
       } else {
         Alert.alert("Error", data.message || "Failed to add contact.");
       }
@@ -125,7 +122,7 @@ export default function TrustedContacts() {
     }
   };
 
-  //  Load contacts from device
+  // Load contacts from device
   const loadDeviceContacts = async () => {
     try {
       const { status } = await Contacts.requestPermissionsAsync();
@@ -133,11 +130,9 @@ export default function TrustedContacts() {
         Alert.alert("Permission Denied", "Cannot access contacts.");
         return;
       }
-
       const { data } = await Contacts.getContactsAsync({
         fields: [Contacts.Fields.PhoneNumbers],
       });
-
       const filtered = data.filter((c) => c.phoneNumbers?.length);
       setDeviceContacts(filtered);
       setShowContactList(true);
@@ -147,29 +142,22 @@ export default function TrustedContacts() {
     }
   };
 
-  // Handle contact selection from device
+  // Handle selection of a device contact
   const handleContactSelect = async (contact: DeviceContact) => {
-    if (!userId) {
-      Alert.alert("Error", "User ID not found.");
+    if (!userId) return;
+
+    const phone = contact.phoneNumbers?.[0]?.number?.replace(/\D/g, "").slice(-10) || "";
+    const name = contact.name || "Unknown";
+
+    if (!phone || !isValidPhoneNumber(phone)) {
+      Alert.alert("Invalid Phone", "This contact has no valid 10-digit phone number.");
       return;
     }
 
     // Check if already added
-    const alreadyAdded = contacts.find(
-      (c) => c.name === contact.name || c.phone === contact.phoneNumbers?.[0]?.number?.replace(/\D/g, "").slice(-10)
-    );
-
-    if (alreadyAdded) {
+    if (contacts.find((c) => c.name === name || c.phone === phone)) {
       Alert.alert("Already Added", "This contact is already in your trusted list.");
       setShowContactList(false);
-      return;
-    }
-
-    const name = contact.name || "Unknown";
-    const phone = contact.phoneNumbers?.[0]?.number?.replace(/\D/g, "").slice(-10) || "";
-
-    if (!phone || !isValidPhoneNumber(phone)) {
-      Alert.alert("Invalid Phone", "This contact has no valid 10-digit phone number.");
       return;
     }
 
@@ -179,11 +167,10 @@ export default function TrustedContacts() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, phone }),
       });
-
       const data = await res.json();
       if (data.success) {
-        setContacts((prev) => [...prev, data.friend]);
         Alert.alert("Success", `${name} added to trusted contacts!`);
+        fetchContacts();
       } else {
         Alert.alert("Error", data.message || "Failed to add contact.");
       }
@@ -195,41 +182,7 @@ export default function TrustedContacts() {
     setShowContactList(false);
   };
 
-  // ✅ Export trusted contacts to device
-  // const exportContacts = async () => {
-  //   if (contacts.length === 0) {
-  //     Alert.alert("No Contacts", "No contacts to export.");
-  //     return;
-  //   }
-
-  //   try {
-  //     const { status } = await Contacts.requestPermissionsAsync();
-  //     if (status !== "granted") {
-  //       Alert.alert("Permission Denied", "Cannot export contacts.");
-  //       return;
-  //     }
-
-  //     let successCount = 0;
-  //     for (const c of contacts) {
-  //       try {
-  //         await Contacts.addContactAsync({
-  //           name: c.name,
-  //           phoneNumbers: [{ label: "mobile", number: c.phone }],
-  //         });
-  //         successCount++;
-  //       } catch (contactErr) {
-  //         console.error(`Failed to export ${c.name}:`, contactErr);
-  //       }
-  //     }
-
-  //     Alert.alert("Success", `${successCount} contact(s) exported to phone!`);
-  //   } catch (err) {
-  //     console.error("Export contacts error:", err);
-  //     Alert.alert("Error", "Could not export contacts.");
-  //   }
-  // };
-
-  //  Edit contact
+  // Edit contact
   const startEditContact = (contact: Contact) => {
     setEditingContact(contact);
     setEditName(contact.name);
@@ -249,28 +202,17 @@ export default function TrustedContacts() {
     }
 
     try {
-      const res = await fetch(
-        `${API_BASE}/${userId}/trusted-friends/${editingContact.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: editName.trim(),
-            phone: editPhone.trim(),
-          }),
-        }
-      );
-
+      const res = await fetch(`${API_BASE}/${userId}/trusted-friends/${editingContact.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: editName.trim(), phone: editPhone.trim() }),
+      });
       const data = await res.json();
       if (data.success) {
-        setContacts((prev) =>
-          prev.map((c) =>
-            c.id === editingContact.id ? { ...c, name: editName.trim(), phone: editPhone.trim() } : c
-          )
-        );
         setEditModalVisible(false);
         setEditingContact(null);
         Alert.alert("Success", "Contact updated successfully!");
+        fetchContacts();
       } else {
         Alert.alert("Error", data.message || "Failed to update contact.");
       }
@@ -280,7 +222,7 @@ export default function TrustedContacts() {
     }
   };
 
-  //  Delete contact
+  // Delete contact
   const deleteContact = async (friendId: string) => {
     if (!userId) return;
 
@@ -291,16 +233,14 @@ export default function TrustedContacts() {
         style: "destructive",
         onPress: async () => {
           try {
-            const res = await fetch(
-              `${API_BASE}/${userId}/trusted-friends/${friendId}`,
-              { method: "DELETE" }
-            );
-
-            if (res.ok) {
-              setContacts((prev) => prev.filter((c) => c.id !== friendId));
+            const res = await fetch(`${API_BASE}/${userId}/trusted-friends/${friendId}`, {
+              method: "DELETE",
+            });
+            const data = await res.json();
+            if (data.success) {
               Alert.alert("Success", "Contact deleted successfully!");
+              fetchContacts();
             } else {
-              const data = await res.json();
               Alert.alert("Error", data.message || "Failed to delete contact.");
             }
           } catch (err) {
@@ -312,7 +252,7 @@ export default function TrustedContacts() {
     ]);
   };
 
-  // Render trusted contact item
+  // Render
   const renderTrustedContact = ({ item }: { item: Contact }) => (
     <View style={styles.contactItem}>
       <Text style={styles.contactText}>
@@ -329,7 +269,6 @@ export default function TrustedContacts() {
     </View>
   );
 
-  // Render device contact item
   const renderDeviceContact = ({ item }: { item: DeviceContact }) => (
     <TouchableOpacity style={styles.deviceContactItem} onPress={() => handleContactSelect(item)}>
       <Text style={styles.deviceContactName}>{item.name}</Text>
@@ -367,27 +306,12 @@ export default function TrustedContacts() {
           onChangeText={setNewPhone}
           maxLength={10}
         />
-
-        {/* Add Contact Manually */}
         <TouchableOpacity style={styles.addButton} onPress={addContact}>
           <Icon name="add" color="#fff" />
         </TouchableOpacity>
-
-        {/* Select from Device Contacts */}
-        <TouchableOpacity
-          style={[styles.addButton, styles.blueButton]}
-          onPress={loadDeviceContacts}
-        >
+        <TouchableOpacity style={[styles.addButton, styles.blueButton]} onPress={loadDeviceContacts}>
           <Icon name="contacts" color="#fff" />
         </TouchableOpacity>
-
-        {/* Export to Device Contacts */}
-        {/* <TouchableOpacity
-          style={[styles.addButton, styles.greenButton]}
-          onPress={exportContacts}
-        >
-          <Icon name="upload" color="#fff" />
-        </TouchableOpacity> */}
       </View>
 
       <FlatList
@@ -443,10 +367,7 @@ export default function TrustedContacts() {
               <TouchableOpacity style={styles.saveButton} onPress={saveEditContact}>
                 <Text style={styles.saveText}>Save</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setEditModalVisible(false)}
-              >
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setEditModalVisible(false)}>
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
             </View>
@@ -460,7 +381,7 @@ export default function TrustedContacts() {
 const styles = StyleSheet.create({
   container: {
     borderRadius: 13,
-    marginTop: 50,
+    marginTop: 10,
     marginBottom: 50,
     height: "100%",
     width: "100%",
