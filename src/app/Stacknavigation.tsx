@@ -1,10 +1,10 @@
-import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import SplashScreen from '../components/SplashScreen';
+import Forgotpassword from '../components/Forgotpassword';
 import Login from '../components/Login';
 import Register from '../components/Register';
-import Forgotpassword from '../components/Forgotpassword';
-import  Tabnavigation from './Tabnavigation'; // create this file next
+import SOSHistoryScreen from '../components/SOSHistoryScreen';
+import SplashScreen from '../components/SplashScreen';
+import Tabnavigation from './Tabnavigation'; // create this file next
 
 const Stack = createNativeStackNavigator();
 
@@ -17,6 +17,7 @@ export default function StackNavigation() {
       <Stack.Screen name="Register" component={Register} ></Stack.Screen>
       <Stack.Screen name="ForgotPassword" component={Forgotpassword} ></Stack.Screen>
       <Stack.Screen name="MainApp" component={ Tabnavigation} />
+       <Stack.Screen name="SOSHistory" component={SOSHistoryScreen} />
     </Stack.Navigator>
       );
 }

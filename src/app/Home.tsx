@@ -6,12 +6,12 @@ import { ScrollView } from "react-native";
 export default function Home() {
     return (
         <ScrollView>
-        <SafeAreaView>
-        <View>
-        <Home1/>
-        </View>
-        </SafeAreaView>
+            <SafeAreaView>
+                <View>
+                    <Home1 />
+                </View>
+            </SafeAreaView>
         </ScrollView>
-       
+
     );
 }
